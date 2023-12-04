@@ -99,15 +99,7 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 
 # Training Loop
 
-# Lists to keep track of progress
-img_list = []
-G_losses = []
-D_losses = []
-iters = 0
-
 criterion = nn.BCELoss()
-loss_fn_G = nn.MSELoss()
-
 mse_loss = nn.MSELoss()
 
 def g_loss_fn(input):
@@ -125,7 +117,6 @@ for epoch in range(num_epochs):
         fake = netG(data)
         #concat with real data
         fake_data = torch.cat((data.view(data.size(1), data.size(2)), fake), dim=0)
-
 
         #D judgment
         #real
