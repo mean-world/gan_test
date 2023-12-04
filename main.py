@@ -105,12 +105,13 @@ iters = 0
 
 criterion = nn.BCELoss()
 loss_fn_G = nn.MSELoss()
-num_epochs = 2
+num_epochs = 20
 print("Starting Training Loop...")
 for epoch in range(num_epochs):
     for batch_idx, (data, target) in enumerate(train_loader):
-
+        #update D
         netD.zero_grad()
+        #real
         output = netD(target)
         real_label = torch.FloatTensor([1, 0]).to(device)
         errD_real = criterion(output, real_label)
@@ -118,18 +119,20 @@ for epoch in range(num_epochs):
         D_x = output.mean().item()
         #fake
         fake = netG(data)
-        errD_fake = loss_fn_G(fake, target)
+        output = netD(fake.detach())
+        fake_label = torch.FloatTensor([0, 1]).to(device)
+        errD_fake = criterion(output, fake_label)
         errD_fake.backward()
         D_G_z1 = output.mean().item()
         errD = errD_real + errD_fake
         optimizerD.step()
        
-
         netG.zero_grad()
-        output = netD(fake.detach())
-        fake_label = torch.FloatTensor([0, 1]).to(device)
+        output = netD(fake)
         errG = criterion(output, fake_label)
         errG.backward()
+        # errG = loss_fn_G(fake, target)
+        # errG.backward()
         D_G_z2 = output.mean().item()
         optimizerG.step()
 
