@@ -1,6 +1,7 @@
 # gan_test
 Implemented by reference papers Stock Market Prediction Based on Generative Adversarial Network
 https://www.sciencedirect.com/science/article/pii/S1877050919302789
+
 Based on this, we try to use CNN in the D network part.
 
 Generator: LSTM model
