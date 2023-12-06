@@ -59,10 +59,10 @@ class cnn_model(nn.Module):
         x = self.fc3(x)
         # x = self.softmax(x)
         x = self.sigmoid(x)
-        return x
+        return x[0]
 
 # t_net = lstm_model()
 # c_net = mlp_model()
 # c = cnn_model()
 # test_data = torch.randn(6, 6)
-# print(c_net(test_data))
+# print(c(test_data))

@@ -87,6 +87,7 @@ netG = model_class.lstm_model().to(device)
 # print(netG)
 
 netD = model_class.mlp_model().to(device)
+# netD = model_class.cnn_model().to(device)
 # print(netD)
 
 num_epochs = 5
@@ -119,12 +120,12 @@ for epoch in range(num_epochs):
         fake = netG(data)
         #concat with real data
         fake_data = torch.cat((data.view(data.size(1), data.size(2)), fake), dim=0)
-
+        real_data = torch.cat((data.view(data.size(1), data.size(2)), target), dim=0)
         #D judgment
         #real
-        real_data_output = netD(target)
+        real_data_output = netD(real_data)
         #fake
-        fake_data_output = netD(fake.detach())
+        fake_data_output = netD(fake_data.detach())
 
         real_loss = criterion(real_data_output, torch.ones_like(real_data_output))
         fake_loss = criterion(fake_data_output, torch.zeros_like(fake_data_output))
@@ -135,7 +136,7 @@ for epoch in range(num_epochs):
         netG.zero_grad()
         #g loss
         g_mse = mse_loss(fake, target)
-        g_loss = g_loss_fn(netD(fake))
+        g_loss = g_loss_fn(netD(fake_data))
         G_loss = g_mse + g_loss
         # G_loss = λ1 * g_mse + λ2 * g_loss
         G_loss.backward()
