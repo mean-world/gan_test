@@ -62,7 +62,8 @@ def split_data(stock, window_size, rate):
 
     return [x_train, y_train, x_test, y_test]
 
-train_set, train_label, test_set, test_label = split_data(data, 6, 0.8)
+time_window_size = 4
+train_set, train_label, test_set, test_label = split_data(data, time_window_size, 0.8)
 
 
 class data_set(Dataset):
@@ -77,7 +78,7 @@ class data_set(Dataset):
     def __getitem__(self, index):
         return self.train[index, :, :], self.label[index, :]
     
-batch_size = 1
+batch_size = 2
 train_dataset = data_set((train_set, train_label))
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size)
 
@@ -86,8 +87,8 @@ train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size)
 netG = model_class.lstm_model().to(device)
 # print(netG)
 
-netD = model_class.mlp_model().to(device)
-# netD = model_class.cnn_model().to(device)
+# netD = model_class.mlp_model().to(device)
+netD = model_class.cnn_model(time_window_size).to(device)
 # print(netD)
 
 num_epochs = 5
@@ -115,28 +116,43 @@ num_epochs = 2
 print("Starting Training Loop...")
 for epoch in range(num_epochs):
     for batch_idx, (data, target) in enumerate(train_loader):
+
         netD.zero_grad()
         #create fake time series
         fake = netG(data)
+        
         #concat with real data
-        fake_data = torch.cat((data.view(data.size(1), data.size(2)), fake), dim=0)
-        real_data = torch.cat((data.view(data.size(1), data.size(2)), target), dim=0)
+        fake_data = torch.cat((data, fake.view(fake.size(0), 1, fake.size(1))), dim=1)
+        real_data = torch.cat((data, target.view(target.size(0), 1, target.size(1))), dim=1)
+
         #D judgment
         #real
-        real_data_output = netD(real_data)
+        real_data_output = netD(real_data[0, :, :])
+        
+        #batch
+        for i in range(1, real_data.size(0)):
+            real_data_output = torch.cat((real_data_output, netD(real_data[i, :, :])), dim=0)
         #fake
-        fake_data_output = netD(fake_data.detach())
+        fake_data_output = netD(fake_data[0, :, :].detach())
+        #batch
+        for i in range(1, fake_data.size(0)):
+            fake_data_output = torch.cat((fake_data_output, netD(fake_data[i, :, :].detach())), dim=0)
 
         real_loss = criterion(real_data_output, torch.ones_like(real_data_output))
         fake_loss = criterion(fake_data_output, torch.zeros_like(fake_data_output))
         D_loss = real_loss + fake_loss
         D_loss.backward()
         optimizerD.step()
-
+        
+        
         netG.zero_grad()
         #g loss
         g_mse = mse_loss(fake, target)
-        g_loss = g_loss_fn(netD(fake_data))
+        fake_data_output = netD(fake_data[0, :, :])
+        for i in range(1, fake_data.size(0)):
+            torch.cat((fake_data_output, netD(fake_data[i, :, :])), dim=0)
+        g_loss = g_loss_fn(fake_data_output)
+        
         G_loss = g_mse + g_loss
         # G_loss = λ1 * g_mse + λ2 * g_loss
         G_loss.backward()

@@ -40,10 +40,10 @@ class mlp_model(nn.Module):
         return x[-1]
     
 class cnn_model(nn.Module):
-    def __init__(self):
+    def __init__(self, time_window_size):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 1, (1, 6), stride = 1)
-        self.fc1 = nn.Linear(6, 16)
+        self.conv1 = nn.Conv2d(1, 1, (1, 1), stride = 1)
+        self.fc1 = nn.Linear(time_window_size * 6, 16)
         self.fc2 = nn.Linear(16, 8)
         self.fc3 = nn.Linear(8, 1)
         self.softmax = nn.Softmax(dim=1)
@@ -65,4 +65,8 @@ class cnn_model(nn.Module):
 # c_net = mlp_model()
 # c = cnn_model()
 # test_data = torch.randn(6, 6)
-# print(c(test_data))
+# print(c(test_data).shape)
+
+# test_data = torch.randn(2, 5, 6)
+# test_data_1 = torch.randn(2, 6)
+# print(torch.cat((test_data, test_data_1.view(test_data_1.size(0), 1, test_data_1.size(1))), dim=1).shape)
