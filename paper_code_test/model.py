@@ -37,9 +37,32 @@ class mlp_model(nn.Module):
         x = self.fc3(x)
         # x = self.softmax(x)
         x = self.sigmoid(x)
+        return x[-1]
+    
+class cnn_model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 1, (1, 6), stride = 1)
+        self.fc1 = nn.Linear(6, 16)
+        self.fc2 = nn.Linear(16, 8)
+        self.fc3 = nn.Linear(8, 1)
+        self.softmax = nn.Softmax(dim=1)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        x = x.view(1, x.size(0), x.size(1))
+        x = F.relu(self.conv1(x))
+
+        x = torch.flatten(x, 1) # flatten all dimensions except batch
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        # x = self.softmax(x)
+        x = self.sigmoid(x)
         return x
 
 # t_net = lstm_model()
 # c_net = mlp_model()
-# test_data = torch.randn(10, 6)
+# c = cnn_model()
+# test_data = torch.randn(6, 6)
 # print(c_net(test_data))

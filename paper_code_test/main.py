@@ -109,6 +109,8 @@ def g_loss_fn(input):
     # print(tmp)
     return tmp 
 num_epochs = 2
+λ1 = 1.0
+λ2 = 1.0
 print("Starting Training Loop...")
 for epoch in range(num_epochs):
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -135,6 +137,7 @@ for epoch in range(num_epochs):
         g_mse = mse_loss(fake, target)
         g_loss = g_loss_fn(netD(fake))
         G_loss = g_mse + g_loss
+        # G_loss = λ1 * g_mse + λ2 * g_loss
         G_loss.backward()
         optimizerG.step()
 
