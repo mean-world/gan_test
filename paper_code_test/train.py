@@ -168,8 +168,8 @@ if __name__ == "__main__":
                 torch.cat((fake_data_output, netD(fake_data[i, :, :])), dim=0)
             g_loss = g_loss_fn(fake_data_output)
             
-            G_loss = g_mse + g_loss
-            # G_loss = λ1 * g_mse + λ2 * g_loss
+            #G_loss = g_mse + g_loss
+            G_loss = λ1 * g_mse + λ2 * g_loss
             G_loss.backward()
             optimizerG.step()
 
